@@ -1,7 +1,7 @@
 # LINE
 LINE Bot
 
------------
-Author
 
+Author
+-----------
 Suphakit Annoppornchai [Saixiii]
