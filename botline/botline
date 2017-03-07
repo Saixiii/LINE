@@ -1,0 +1,132 @@
+#!/usr/bin/sh
+
+##===============================================================================##
+##  Author:         Suphakit Annoppornchai [Bank]
+##  Date:           10/07/2015
+##  Function:       Line Bot management
+##===============================================================================##
+
+. /home/mstm/.bash_profile
+
+if [ -z "$2" ]
+then
+   echo "Usage : $(basename $0) [start|stop|status] <name>"
+   exit
+fi
+
+#-------------------------------------------------------------------------------
+#     G L O B A L    V A R I A B L E S
+#-------------------------------------------------------------------------------
+
+ACTION=$1
+BOT_NAME=$2
+
+PATH_HOME=/home/mstm/botline
+PATH_BOT=${PATH_HOME}/bot
+PATH_BIN=${PATH_HOME}/bin
+PATH_LOG=${PATH_HOME}/log
+PATH_CONF=${PATH_HOME}/conf
+
+FILE_BOT=${PATH_BOT}/${BOT_NAME}.pyc
+FILE_LOG=${PATH_LOG}/${BOT_NAME}.log
+FILE_PROXY=${PATH_CONF}/proxychains.conf
+
+#-------------------------------------------------------------------------------
+# Function    : func_usage
+# Description : Print usage script
+# Parameters  : <None>
+# Return      : <None>
+#-------------------------------------------------------------------------------
+func_usage() {
+   echo "Usage : $(basename $0) [start|stop|status|restart] <bot>"
+   exit 0
+}
+
+
+#-------------------------------------------------------------------------------
+# Function    : func_status
+# Description : Check status bot
+# Parameters  : <None>
+# Return      : <None>
+#-------------------------------------------------------------------------------
+func_status() {
+   echo ""
+   PROC_COUNT=`ps -ef |grep ${BOT_NAME}.py |egrep -v "grep|$$|vi|cat|head|tail|more" |awk '{print $2}' |wc -l|awk '{print $1}'`
+   if [ ${PROC_COUNT} -gt 0 ]
+   then
+      echo " ----  Line Bot ${BOT_NAME} Status : [Start]"
+   else
+      echo " ----  Line bot ${BOT_NAME} Status : [Stop]"
+   fi
+   echo ""
+}
+
+#-------------------------------------------------------------------------------
+# Function    : func_start
+# Description : Start bot
+# Parameters  : <None>
+# Return      : <None>
+#-------------------------------------------------------------------------------
+func_start() {
+   echo ""
+   PROC_COUNT=`ps -ef |grep ${BOT_NAME}.py |egrep -v "grep|$$|vi|cat|head|tail|more" |awk '{print $2}' |wc -l|awk '{print $1}'`
+   if [ ${PROC_COUNT} -lt 1 ]
+   then
+      nohup /usr/local/bin/proxychains4 -q -f ${FILE_PROXY} python -u ${FILE_BOT} >> ${FILE_LOG} &
+      echo " ----  Line Bot ${BOT_NAME} Start : [Done]"
+   else
+      echo " ----  Line Bot ${BOT_NAME} Start : [Has already started]"
+   fi
+   echo ""
+}
+
+#-------------------------------------------------------------------------------
+# Function    : func_stop
+# Description : Stop bot
+# Parameters  : <None>
+# Return      : <None>
+#-------------------------------------------------------------------------------
+func_stop() {
+   echo ""
+   PROC_COUNT=`ps -ef |grep ${BOT_NAME}.py |egrep -v "grep|$$|vi|cat|head|tail|more" |awk '{print $2}' |wc -l|awk '{print $1}'`
+   if [ ${PROC_COUNT} -gt 0 ]
+   then
+      PROC_ID=`ps -ef |grep python |grep bot |egrep -v "grep|$$|vi|cat|head|tail|more" |awk '{print $2}' |tr '\n' ' '`
+      kill -9 ${PROC_ID}
+      echo " ----  Line Bot ${BOT_NAME} Stop : [Done] ${PROC_ID}]"
+   else
+      echo " ----  Line Bot ${BOT_NAME} Stop : [Has already stoped]"
+   fi
+   echo ""
+}
+
+
+
+
+#-------------------------------------------------------------------------------
+#     M A I N    P R O G R A M
+#-------------------------------------------------------------------------------
+
+if [ ! -f "${FILE_BOT}" ]
+then
+   echo "Please check bot name in ${PATH_BOT}"
+   func_usage
+fi
+
+if [ "${ACTION}" == "start" ]
+then
+   func_start
+elif [ "${ACTION}" == "stop" ]
+then
+   func_stop
+elif [ "${ACTION}" == "restart" ]
+then
+   func_stop
+   func_start
+elif [ "${ACTION}" == "status" ]
+then
+   func_status
+else
+   func_usage
+fi
+

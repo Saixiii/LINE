@@ -1,0 +1,6 @@
+SBM1|sssusr|10.95.98.134|40|/data/IBM/HTTPServer/logs|access.
+SBM2|sssusr|10.95.98.135|40|/data/IBM/HTTPServer/logs|access.
+TWGR1|root|10.95.103.6|40|/usr/IBM/HTTPServer/logs|access_log
+TWGR2|root|10.95.103.7|40|/usr/IBM/HTTPServer/logs|access_log
+TWGR3|root|10.95.103.8|40|/usr/IBM/HTTPServer/logs|access_log
+TWGR4|root|10.95.103.9|40|/usr/IBM/HTTPServer/logs|access_log

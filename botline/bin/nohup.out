@@ -1,0 +1,15 @@
+WASX7209I: Connected to process "dmgr" on node pbi-sursbmap-01CellManager01 using SOAP connector;  The type of process is: DeploymentManager
+WASX8022E: Incompatible node version; exception information: com.ibm.ws.scripting.ScriptingException: WASX8021E: The wsadmin with version "8.0.0.6" connected to an incompatible server or deployment manager with node version "7.0.0.33", which is not supported. "
+WASX7303I: The following options are passed to the scripting environment and are available as arguments that are stored in the argv variable: "[pbi-sursbmap-01Node01, AppSbmReal11a]"
+Warning: Caught exception accessing Admin objects. Continuing.
+[2015-08-10 18:45:51] StopServer: stopping server pbi-sursbmap-01Node01,AppSbmReal11a immediate=1 terminate=0
+WASX7337I: Invoked stop for server "AppSbmReal11a" on node "pbi-sursbmap-01Node01"; Waiting for stop completion.
+[2015-08-10 18:45:57] StopServer: Stop complete for server pbi-sursbmap-01Node01,AppSbmReal11a
+WASX7209I: Connected to process "dmgr" on node pbi-sursbmap-01CellManager01 using SOAP connector;  The type of process is: DeploymentManager
+WASX8022E: Incompatible node version; exception information: com.ibm.ws.scripting.ScriptingException: WASX8021E: The wsadmin with version "8.0.0.6" connected to an incompatible server or deployment manager with node version "7.0.0.33", which is not supported. "
+WASX7303I: The following options are passed to the scripting environment and are available as arguments that are stored in the argv variable: "[pbi-sursbmap-01Node01, AppSbmReal11a]"
+Warning: Caught exception accessing Admin objects. Continuing.
+[2015-08-10 18:46:17] StartServer: starting server pbi-sursbmap-01Node01,AppSbmReal11a
+[2015-08-10 18:46:18] StartServer: startServer(pbi-sursbmap-01Node01,AppSbmReal11a)
+[2015-08-10 18:48:02] StartServer: server pbi-sursbmap-01Node01,AppSbmReal11a not running yet, waiting another 15 secs
+[2015-08-10 18:48:17] StartServer: Start complete for server pbi-sursbmap-01Node01,AppSbmReal11a

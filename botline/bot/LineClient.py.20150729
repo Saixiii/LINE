@@ -1,0 +1,74 @@
+#!/usr/bin/python -u
+# coding: utf-8
+
+import sys
+import socket
+import getopt
+
+#-------------------------------------------------------------------------------
+#     G L O B A L    V A R I A B L E S
+#-------------------------------------------------------------------------------
+
+host  = '10.4.58.39'
+port  = 8090
+group = None
+msg   = None
+
+
+#-------------------------------------------------------------------------------
+#     F U N C T I O N S
+#-------------------------------------------------------------------------------
+
+# Function Usage
+def usage():
+	print 'Mandatory : [-g <LineGroup>] [-m <LineMessage>]'
+	print 'Optional  : [-h <host>] [-p <port>]'
+	sys.exit(0)
+	return
+
+
+#-------------------------------------------------------------------------------
+#     I N I T I A L    P R O G R A M
+#-------------------------------------------------------------------------------
+
+# Get option detail
+try:
+	opts, args = getopt.getopt(sys.argv[1:],"h:p:g:m:",["host=","port=","group=","msg="])
+except getopt.GetoptError:
+	usage()
+
+try:
+	for opt, arg in opts:
+		if opt in ("-h", "--host"):
+			host = arg
+		elif opt in ("-p", "--port"):
+			port = int(arg)
+		elif opt in ("-g", "--group"):
+			group = arg
+		elif opt in ("-m", "--msg"):
+			msg = arg
+		else:
+			usage()
+except:
+	usage()
+
+# Verify input data
+if (group == None) or (msg == None):
+	usage()
+	
+data = group + ":" + msg
+
+# Create a socket (SOCK_STREAM means a TCP socket)
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+try:
+    # Connect to server and send data
+    sock.connect((host, port))
+    sock.sendall(data + "\n")
+
+    # Receive data from the server and shut down
+    received = sock.recv(4096)
+finally:
+    sock.close()
+    
+print "{0}".format(received)
