@@ -1,9 +1,11 @@
-#!/usr/bin/sh
+#!/usr/bin/sh -x
 
 ##===============================================================================##
 ##  Author:         Suphakit Annoppornchai [Bank]
 ##  Date:           19/08/2015
 ##  Function:       Get oracle active session graph
+##  Update:
+##           06/03/2017 - Update multiple display command
 ##===============================================================================##
 
 . /home/mstm/.bash_profile
@@ -23,11 +25,11 @@ PATH_CONFIG="${PATH_HOME}/conf"
 PATH_LOG="${PATH_HOME}/log"
 PATH_IMAGE="${PATH_HOME}/image"
 FILE_CONFIG="${PATH_CONFIG}/oracle.conf"
+FILE_LIST="${PATH_LOG}/CheckEM.${PID_ID}"
 SQL_STAT="${PATH_LOG}/SQL_SESSION_DB.${PID_ID}"
 SQL_CORE="${PATH_LOG}/SQL_LICENSE_DB.${PID_ID}"
 SQL_STAT="${PATH_LOG}/SQL_SESSION_DB.${PID_ID}"
 GNU_STAT="${PATH_LOG}/SQL_GNU_DB.${PID_ID}"
-GNU_IMAGE="${PATH_IMAGE}/session.png"
 
 #-------------------------------------------------------------------------------
 # Function    : func_Usage
@@ -146,12 +148,14 @@ EOF
 # Return      : <None>
 #-------------------------------------------------------------------------------
 func_Plot() {
+   PLOT_NAME=$1
+   GNU_IMAGE="${PATH_IMAGE}/${PLOT_NAME}.png"
    DT_START=`cat ${SQL_STAT} |grep -v Time |awk -F, '{print $1}' |sort |head -1`
    DT_END=`cat ${SQL_STAT} |grep -v Time |awk -F, '{print $1}' |sort |tail -1`
    Y2_MAX=`cat ${SQL_STAT}|awk '{print $4}'|sort -rn|head -1`
    #X_LABEL=`echo "${INPUT_LENGTH}/20"|bc`
    #POINTER=`echo "${INPUT_LENGTH}/25"|bc`
-   echo "set title noenhanced \"Oracle Acitve Sessions : ${INPUT_DB} [ Date : ${DT_START} - ${DT_END} ]\"" > ${GNU_STAT}
+   echo "set title noenhanced \"Oracle Acitve Sessions : ${PLOT_NAME} [ Date : ${DT_START} - ${DT_END} ]\"" > ${GNU_STAT}
    echo "set terminal pngcairo size 1000,500 enhanced font \"Helvetica,10\"" >> ${GNU_STAT}
    echo "set datafile separator \",\"" >> ${GNU_STAT}
    echo "set lmargin 8" >> ${GNU_STAT}
@@ -197,50 +201,65 @@ then
   func_Usage
 fi
 
-COUNT_DB=`cat ${FILE_CONFIG} |awk -F, -v s="$INPUT_DB" '{IGNORECASE = 1;if(($1==s)&&($2!="")&&($3!="")&&($4!="")) print $0}'|wc -l`
+COUNT_DB=`cat ${FILE_CONFIG} |awk -F, -v s="$INPUT_DB" '{IGNORECASE = 1;if(($1~s)&&($2!="")&&($3!="")&&($4!="")) print $0}'|wc -l`
 
-if [ ${COUNT_DB} != "1" ]
+if [ ${COUNT_DB} == "0" ]
 then
   func_Usage
 fi
 
-DB_TNS=`cat ${FILE_CONFIG}|awk -F, -v s="$INPUT_DB" '{IGNORECASE = 1;if($1==s) print $2}'`
-DB_USER=`cat ${FILE_CONFIG}|awk -F, -v s="$INPUT_DB" '{IGNORECASE = 1;if($1==s) print $3}'`
-DB_PASS=`cat ${FILE_CONFIG}|awk -F, -v s="$INPUT_DB" '{IGNORECASE = 1;if($1==s) print $4}'`
+cat ${FILE_CONFIG} |awk -F, -v s="$INPUT_DB" '{IGNORECASE = 1;if(($1~s)&&($2!="")&&($3!="")&&($4!="")) print $0}' |sort  > ${FILE_LIST}
 
-# Export oracle environment
-func_OracleEnv
+SEND_IMAGE="pic"
 
-# Query DB
-func_SQLLicense
+for line in $(cat ${FILE_LIST})
+do
+  DB_NAME=`echo ${line}|awk -F, '{print $1}'`
+  DB_TNS=`echo ${line}|awk -F, '{print $2}'`
+  DB_USER=`echo ${line}|awk -F, '{print $3}'`
+  DB_PASS=`echo ${line}|awk -F, '{print $4}'`
+  
+  # Export oracle environment
+  func_OracleEnv
 
-CPU_CORE=`cat ${SQL_CORE}|awk '{print $1}'`
+  # Query DB
+  func_SQLLicense
 
-# Query DB
-func_SQLQuery
+  CPU_CORE=`cat ${SQL_CORE}|awk '{print $1}'`
+  
+  # Query DB
+  func_SQLQuery
 
-DB_QUEUE=`cat ${SQL_STAT}|wc -l|awk '{print $1}'`
-DB_RESULT=`cat ${SQL_STAT}|grep ORA|head -1`
-DB_CHECK=`cat ${SQL_STAT}|grep ORA|wc -l |awk '{print $1}'`
+  DB_QUEUE=`cat ${SQL_STAT}|wc -l|awk '{print $1}'`
+  DB_RESULT=`cat ${SQL_STAT}|grep ORA|head -1`
+  DB_CHECK=`cat ${SQL_STAT}|grep ORA|wc -l |awk '{print $1}'`
+  
+  if [ ${DB_QUEUE} -lt 2 ]
+  then
+     echo "Stat ${DB_NAME} did not found or wrong input"
+     rm ${SQL_STAT} ${SQL_CORE}
+     exit
+  elif [ ${DB_CHECK} -gt 0 ]
+  then
+     echo "Oracle ${DB_NAME} error"
+     echo "${DB_RESULT}"
+     rm ${SQL_STAT} ${SQL_CORE}
+     exit
+  fi
 
-if [ ${DB_QUEUE} -lt 2 ]
-then
-   echo "Stat report did not found or wrong input"
-   rm ${SQL_STAT} ${SQL_CORE}
-   exit
-elif [ ${DB_CHECK} -gt 0 ]
-then
-   echo "Oracle error"
-   echo "${DB_RESULT}"
-   rm ${SQL_STAT} ${SQL_CORE}
-   exit
-fi
+  func_Plot ${DB_NAME}
+  
+  if [ ${SEND_IMAGE} = "pic" ]
+  then
+     SEND_IMAGE="${SEND_IMAGE}=${PATH_IMAGE}/${DB_NAME}.png"
+  else
+     SEND_IMAGE="${SEND_IMAGE},${PATH_IMAGE}/${DB_NAME}.png"
+  fi
+    
+  rm ${SQL_STAT} ${SQL_CORE} ${GNU_STAT}
 
+done
 
+echo "${SEND_IMAGE}"
 
-
-func_Plot
-
-echo "pic=${GNU_IMAGE}"
-
-rm ${SQL_STAT} ${SQL_CORE} ${GNU_STAT}
+rm ${FILE_LIST}
