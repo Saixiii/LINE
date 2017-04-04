@@ -63,10 +63,6 @@ class LineClient(LineAPI):
         if not bypass:
             self._headers['User-Agent']         = user_agent
             self._headers['X-Line-Application'] = app
-            
-        if id != "truemspm@gmail.com":
-            self._headers['User-Agent']         = user_agent
-            self._headers['X-Line-Application'] = app
 
         if authToken:
             self.authToken = self._headers['X-Line-Access'] = authToken
