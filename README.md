@@ -1,9 +1,7 @@
-Saixiii - https://saixiii.com
-
 # LINE
 LINE Bot
 
 
 Author
 -----------
-Suphakit Annoppornchai [Saixiii]
+Suphakit Annoppornchai [Saixiii - https://saixiii.com]
